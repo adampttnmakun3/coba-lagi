@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Workflow Assistant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        * { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+        
+        /* Advanced Glassmorphism effect */
+        .glass {
+            background: linear-gradient(135deg, 
+                rgba(15, 23, 42, 0.95) 0%,
+                rgba(30, 41, 59, 0.9) 50%,
+                rgba(15, 23, 42, 0.95) 100%);
+            backdrop-filter: blur(32px) saturate(180%);
+            border: 1px solid;
+            border-image: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.3),
+                rgba(255, 255, 255, 0.1),
+                rgba(255, 255, 255, 0.05)) 1;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.7),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .glass-header {
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.3) 0%,
+                rgba(147, 51, 234, 0.25) 50%,
+                rgba(16, 185, 129, 0.2) 100%);
+            backdrop-filter: blur(24px) saturate(200%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .glass-input {
+            background: linear-gradient(135deg,
+                rgba(15, 23, 42, 0.8) 0%,
+                rgba(30, 41, 59, 0.7) 100%);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+        
+        .glass-message-ai {
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.15) 0%,
+                rgba(147, 51, 234, 0.1) 100%);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .glass-message-user {
+            background: linear-gradient(135deg,
+                rgba(59, 130, 246, 0.9) 0%,
+                rgba(147, 51, 234, 0.8) 100%);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+        
+        .glass-light {
+            background: linear-gradient(135deg,
+                rgba(255, 255, 255, 0.95) 0%,
+                rgba(248, 250, 252, 0.9) 50%,
+                rgba(255, 255, 255, 0.95) 100%);
+            backdrop-filter: blur(32px) saturate(180%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+        
+        /* Custom scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Typing animation */
+        .typing-dots span {
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Pulse animation for status */
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+        
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Message animations */
+        .message-enter {
+            animation: messageSlideIn 0.3s ease-out forwards;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        
+        @keyframes messageSlideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Icon hover effects */
+        .icon-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .icon-hover:hover {
+            transform: translateY(-1px) scale(1.05);
+            filter: brightness(1.2);
+        }
+        
+        /* Floating elements */
+        .floating-glow {
+            position: relative;
+        }
+        
+        .floating-glow::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #10b981);
+            border-radius: inherit;
+            filter: blur(8px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
+        }
+        
+        .floating-glow:hover::before {
+            opacity: 0.3;
+        }
+        
+        /* Theme transition */
+        .theme-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* Light theme overrides */
+        .light .glass {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            color: #1f2937;
+        }
+        /* Tambahan agar teks terbaca di mode terang */
+        .light .glass-message-ai {
+            color: #1f2937 !important;
+        }
+        .light .glass-message-user {
+            color: #1f2937 !important;
+        }
+        .light .glass-input,
+        .light .glass-input textarea,
+        .light .glass-input input,
+        .light #messageInput {
+            color: #1f2937 !important;
+            background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.7) 100%) !important;
+        }
+        .light .glass-input::placeholder,
+        .light #messageInput::placeholder {
+            color: #64748b !important;
+            opacity: 1;
+        }
+        
+        .light .custom-scroll::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        
+        .light .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .light .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .resize-handle {
+            position: absolute;
+            z-index: 60;
+            background: transparent;
+        }
+        .resize-handle-n, .resize-handle-s {
+            left: 0; right: 0; height: 10px; cursor: ns-resize;
+        }
+        .resize-handle-n { top: -5px; }
+        .resize-handle-s { bottom: -5px; }
+        .resize-handle-e, .resize-handle-w {
+            top: 0; bottom: 0; width: 10px; cursor: ew-resize;
+        }
+        .resize-handle-e { right: -5px; }
+        .resize-handle-w { left: -5px; }
+        .resize-handle-ne, .resize-handle-nw, .resize-handle-se, .resize-handle-sw {
+            width: 16px; height: 16px; position: absolute; z-index: 61;
+        }
+        .resize-handle-ne { top: -8px; right: -8px; cursor: nesw-resize; }
+        .resize-handle-nw { top: -8px; left: -8px; cursor: nwse-resize; }
+        .resize-handle-se { bottom: -8px; right: -8px; cursor: nwse-resize; }
+        .resize-handle-sw { bottom: -8px; left: -8px; cursor: nesw-resize; }
+        .resize-handle:hover {
+            background: rgba(59,130,246,0.08);
+        }
+        @media (max-width: 640px) {
+            #floatingAssistant.minimized {
+                width: 100vw !important;
+                left: 0 !important;
+                right: 0 !important;
+                min-width: 0 !important;
+                border-radius: 0 0 1.5rem 1.5rem !important;
+            }
+        }
+        @media (min-width: 641px) and (max-width: 1024px) {
+            #floatingAssistant.minimized {
+                width: 350px !important;
+                min-width: 0 !important;
+            }
+        }
+        @media (min-width: 1025px) {
+            #floatingAssistant.minimized {
+                width: 350px !important;
+                min-width: 0 !important;
+            }
+        }
+    </style>
+</head>
+<body class="theme-transition">
+    <!-- Floating Assistant Window -->
+    <div id="floatingAssistant" class="fixed bottom-6 right-6 w-96 h-[600px] glass rounded-3xl shadow-2xl flex flex-col overflow-hidden z-50 theme-transition floating-glow my-8">
+        <!-- Resize Handles -->
+        <div class="resize-handle resize-handle-n"></div>
+        <div class="resize-handle resize-handle-e"></div>
+        <div class="resize-handle resize-handle-s"></div>
+        <div class="resize-handle resize-handle-w"></div>
+        <div class="resize-handle resize-handle-ne"></div>
+        <div class="resize-handle resize-handle-nw"></div>
+        <div class="resize-handle resize-handle-se"></div>
+        <div class="resize-handle resize-handle-sw"></div>
+        
+        <!-- Header -->
+        <div id="dragHandle" class="flex items-center justify-between p-5 cursor-move glass-header">
+            <div class="flex items-center space-x-4">
+                <div>
+                    <h3 class="text-white font-semibold text-sm"> ADAMPTNM</h3>
+                    <p class="text-gray-300 text-xs opacity-80">Powered by GPT-4o & Claude</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <button id="themeToggle" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all icon-hover backdrop-blur-sm" title="Toggle Theme">
+                    <i data-lucide="moon" class="w-4 h-4 text-white"></i>
+                </button>
+                <button id="minimizeBtn" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all icon-hover backdrop-blur-sm" title="Minimize">
+                    <i data-lucide="minus" class="w-4 h-4 text-white"></i>
+                </button>
+                <button id="expandBtn" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all icon-hover backdrop-blur-sm" title="Expand">
+                    <i data-lucide="maximize-2" class="w-4 h-4 text-white"></i>
+                </button>
+                <button id="closeBtn" class="w-8 h-8 rounded-xl bg-red-500/20 hover:bg-red-500/40 flex items-center justify-center transition-all icon-hover backdrop-blur-sm" title="Close">
+                    <i data-lucide="x" class="w-4 h-4 text-white"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <div class="px-5 py-4 border-b border-white/10 bg-black/10 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full pulse-green shadow-lg"></div>
+                    <span class="text-green-400 text-xs font-medium">API Connected</span>
+                    <i data-lucide="wifi" class="w-3 h-3 text-green-400"></i>
+                </div>
+                <div class="text-right flex items-center space-x-2">
+                    <i data-lucide="zap" class="w-3 h-3 text-gray-400"></i>
+                    <div>
+                        <p class="text-gray-400 text-xs">Active Node:</p>
+                        <p id="activeNode" class="text-white text-xs font-medium">HTTP Request #1</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat View -->
+        <div id="chatContainer" class="flex-1 p-5 overflow-y-auto custom-scroll space-y-5">
+            <!-- Welcome Message -->
+            <div class="flex items-start space-x-4 message-enter">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-600 to-emerald-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="glass-message-ai rounded-2xl rounded-tl-md p-4 shadow-lg">
+                        <p class="text-white text-sm leading-relaxed">Hi! I'm your AI Workflow Assistant. I can help you debug nodes, suggest improvements, and optimize your n8n workflows. What would you like to know?</p>
+                    </div>
+                    <p class="text-gray-400 text-xs mt-2 ml-2 flex items-center space-x-1">
+                        <i data-lucide="clock" class="w-3 h-3"></i>
+                        <span>Just now</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Typing Indicator (Hidden by default) -->
+        <div id="typingIndicator" class="px-5 pb-3 hidden">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-600 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <i data-lucide="message-circle" class="w-4 h-4 text-white"></i>
+                </div>
+                <div class="typing-dots flex space-x-1">
+                    <span class="w-2 h-2 bg-white/60 rounded-full"></span>
+                    <span class="w-2 h-2 bg-white/60 rounded-full"></span>
+                    <span class="w-2 h-2 bg-white/60 rounded-full"></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Input Area -->
+        <div class="p-5 border-t border-white/10 bg-black/10 backdrop-blur-sm">
+            <!-- Quick Actions -->
+            <div class="flex space-x-3 mb-4">
+                <button class="quick-action-btn px-4 py-2 glass-input rounded-2xl text-blue-400 text-xs font-medium transition-all icon-hover flex items-center space-x-2" data-action="fix-error">
+                    <i data-lucide="wrench" class="w-5 h-5"></i>
+                    <span>Fix Error</span>
+                </button>
+                <button class="quick-action-btn px-4 py-2 glass-input rounded-2xl text-emerald-400 text-xs font-medium transition-all icon-hover flex items-center space-x-2" data-action="generate-node">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span>Generate Node</span>
+                </button>
+                <button class="quick-action-btn px-4 py-2 glass-input rounded-2xl text-purple-400 text-xs font-medium transition-all icon-hover flex items-center space-x-2" data-action="optimize">
+                    <i data-lucide="zap" class="w-5 h-5"></i>
+                    <span>Optimize</span>
+                </button>
+            </div>
+            <!-- Dropdown Pilihan Model AI (fit-content, tanpa label) -->
+            <div class="mb-2 flex items-center">
+                <select id="modelSelect" class="glass-input rounded-lg px-2 py-1 text-xs h-7 text-white bg-black/30 focus:outline-none focus:ring-2 focus:ring-blue-400/50" style="width: fit-content; min-width: 0;">
+                    <option value="openai/gpt-4o">GPT-4o</option>
+                    <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                    <option value="groq/llama3-8b-8192">Llama 3</option>
+                </select>
+            </div>
+            
+            <!-- Input Box -->
+            <div class="flex items-end space-x-4">
+                <div class="flex-1">
+                    <textarea 
+                        id="messageInput" 
+                        placeholder="Ask adamptnm..."
+                        class="w-full glass-input rounded-2xl px-5 py-4 text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:border-blue-400/50 transition-all"
+                        rows="1"></textarea>
+                </div>
+                <button id="sendBtn" class="w-12 h-12 bg-gradient-to-r from-blue-600 via-purple-600 to-emerald-600 rounded-2xl flex items-center justify-center hover:from-blue-500 hover:via-purple-500 hover:to-emerald-500 transition-all icon-hover shadow-lg floating-glow" title="Send Message (Ctrl+Enter)">
+                    <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GLOBAL STATE ====================
+        let isDragging = false;
+        let currentX, currentY, initialX, initialY;
+        let isMinimized = false;
+        let isExpanded = false;
+        let isLightTheme = false;
+        
+        // DOM Elements
+        const floatingAssistant = document.getElementById('floatingAssistant');
+        const dragHandle = document.getElementById('dragHandle');
+        const chatContainer = document.getElementById('chatContainer');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const activeNodeDisplay = document.getElementById('activeNode');
+        
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            loadSavedPosition();
+            loadSavedTheme();
+            setupEventListeners();
+            autoResizeTextarea();
+            simulateNodeDetection();
+        });
+        
+        // ==================== DRAG & DROP FUNCTIONALITY ====================
+        function setupEventListeners() {
+            // Drag functionality
+            dragHandle.addEventListener('mousedown', dragStart);
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', dragEnd);
+            
+            // Window controls
+            document.getElementById('minimizeBtn').addEventListener('click', toggleMinimize);
+            document.getElementById('expandBtn').addEventListener('click', toggleExpand);
+            document.getElementById('closeBtn').addEventListener('click', closeAssistant);
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // Chat functionality
+            sendBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keydown', handleKeyDown);
+            
+            // Quick actions
+            document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                btn.addEventListener('click', handleQuickAction);
+            });
+        }
+        
+        function dragStart(e) {
+            if (isMinimized) return;
+            
+            isDragging = true;
+            initialX = e.clientX - floatingAssistant.offsetLeft;
+            initialY = e.clientY - floatingAssistant.offsetTop;
+            
+            floatingAssistant.style.transition = 'none';
+            dragHandle.style.cursor = 'grabbing';
+        }
+        
+        function drag(e) {
+            if (!isDragging) return;
+            
+            e.preventDefault();
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+            
+            // Boundary constraints
+            const maxX = window.innerWidth - floatingAssistant.offsetWidth;
+            const maxY = window.innerHeight - floatingAssistant.offsetHeight;
+            
+            currentX = Math.max(0, Math.min(currentX, maxX));
+            currentY = Math.max(0, Math.min(currentY, maxY));
+            
+            floatingAssistant.style.left = currentX + 'px';
+            floatingAssistant.style.top = currentY + 'px';
+            floatingAssistant.style.right = 'auto';
+            floatingAssistant.style.bottom = 'auto';
+        }
+        
+        function dragEnd() {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            floatingAssistant.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            dragHandle.style.cursor = 'move';
+            
+            // Save position
+            savePosition();
+        }
+        
+        // ==================== WINDOW CONTROLS ====================
+        function toggleMinimize() {
+            isMinimized = !isMinimized;
+            let callText = document.getElementById('callAdamptnmText');
+            if (callText) {
+                callText.remove();
+            }
+            if (isMinimized) {
+                floatingAssistant.classList.add('minimized');
+                floatingAssistant.style.height = '60px';
+                floatingAssistant.style.overflow = 'hidden';
+                // Responsif: reset width/left/right agar ikut CSS
+                floatingAssistant.style.width = '';
+                floatingAssistant.style.left = '';
+                floatingAssistant.style.right = '';
+            } else {
+                floatingAssistant.classList.remove('minimized');
+                floatingAssistant.style.height = isExpanded ? '80vh' : '600px';
+                floatingAssistant.style.overflow = 'hidden';
+                floatingAssistant.style.width = isExpanded ? '50vw' : '384px';
+            }
+        }
+        
+        function toggleExpand() {
+            if (isMinimized) return;
+            
+            isExpanded = !isExpanded;
+            
+            if (isExpanded) {
+                floatingAssistant.style.width = '50vw';
+                floatingAssistant.style.height = '80vh';
+                floatingAssistant.style.maxWidth = '800px';
+            } else {
+                floatingAssistant.style.width = '384px';
+                floatingAssistant.style.height = '600px';
+                floatingAssistant.style.maxWidth = 'none';
+            }
+        }
+        
+        function closeAssistant() {
+            floatingAssistant.style.transform = 'scale(0.8) translateY(20px)';
+            floatingAssistant.style.opacity = '0';
+            
+            setTimeout(() => {
+                floatingAssistant.style.display = 'none';
+            }, 300);
+        }
+        
+        function toggleTheme() {
+            isLightTheme = !isLightTheme;
+            const themeToggle = document.getElementById('themeToggle');
+            const icon = themeToggle.querySelector('i');
+            
+            if (isLightTheme) {
+                document.body.classList.add('light');
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                document.body.classList.remove('light');
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            
+            // Reinitialize icons after change
+            lucide.createIcons();
+            
+            localStorage.setItem('assistantTheme', isLightTheme ? 'light' : 'dark');
+        }
+        
+        // ==================== CHAT FUNCTIONALITY ====================
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        function autoResizeTextarea() {
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+            });
+        }
+        
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+            // Ambil model dari dropdown
+            const model = document.getElementById('modelSelect').value;
+            // Add user message to chat
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            // Show typing indicator
+            showTypingIndicator();
+            try {
+                // Simulate API call
+                const response = await simulateAPICall(message, model);
+                hideTypingIndicator();
+                addMessage(response, 'assistant');
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.', 'assistant', true);
+            }
+        }
+        
+        function addMessage(content, sender, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start space-x-4 message-enter';
+            
+            const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="flex-1"></div>
+                    <div class="max-w-[80%]">
+                        <div class="glass-message-user rounded-2xl rounded-tr-md p-4 shadow-lg">
+                            <p class="text-white text-sm leading-relaxed">${content}</p>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2 text-right flex items-center justify-end space-x-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            <span>${timestamp}</span>
+                        </p>
+                    </div>
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-700 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                    </div>
+                `;
+            } else {
+                const messageClass = isError ? 'bg-red-500/20 border border-red-500/30' : 'glass-message-ai';
+                const iconName = isError ? 'alert-triangle' : 'sparkles';
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-600 to-emerald-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                        <i data-lucide="${iconName}" class="w-4 h-4 text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="${messageClass} rounded-2xl rounded-tl-md p-4 shadow-lg">
+                            <p class="text-white text-sm leading-relaxed">${content}</p>
+                        </div>
+                        <p class="text-gray-400 text-xs mt-2 ml-2 flex items-center space-x-1">
+                            <i data-lucide="clock" class="w-3 h-3"></i>
+                            <span>${timestamp}</span>
+                        </p>
+                    </div>
+                `;
+            }
+            
+            chatContainer.appendChild(messageDiv);
+            
+            // Initialize icons for new message
+            lucide.createIcons();
+            
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function showTypingIndicator() {
+            typingIndicator.classList.remove('hidden');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function hideTypingIndicator() {
+            typingIndicator.classList.add('hidden');
+        }
+        
+        function handleQuickAction(e) {
+            const action = e.target.dataset.action;
+            let message = '';
+            
+            switch(action) {
+                case 'fix-error':
+                    message = 'Can you help me fix the error in the current node?';
+                    break;
+                case 'generate-node':
+                    message = 'Can you suggest the next node for my workflow?';
+                    break;
+                case 'optimize':
+                    message = 'How can I optimize this workflow for better performance?';
+                    break;
+            }
+            
+            if (message) {
+                messageInput.value = message;
+                sendMessage();
+            }
+        }
+        
+        // ==================== API SIMULATION ====================
+        async function simulateAPICall(message, model) {
+            try {
+                const res = await fetch("/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message, model })
+                });
+                const data = await res.json();
+                if(data.reply) return data.reply;
+                if(data.error) return '[ERROR] ' + data.error;
+                return '[ERROR] Balasan tidak diketahui.';
+            } catch (err) {
+                return '[ERROR] Tidak dapat terhubung ke server.';
+            }
+        }
+        
+        // ==================== NODE DETECTION SIMULATION ====================
+        function simulateNodeDetection() {
+            const nodes = [
+                'HTTP Request #1',
+                'Set Data #2', 
+                'IF Condition #3',
+                'Webhook #4',
+                'Code Execute #5',
+                'Email Send #6'
+            ];
+            
+            let currentIndex = 0;
+            
+            setInterval(() => {
+                activeNodeDisplay.textContent = nodes[currentIndex];
+                currentIndex = (currentIndex + 1) % nodes.length;
+            }, 8000);
+        }
+        
+        // ==================== PERSISTENCE ====================
+        function savePosition() {
+            const rect = floatingAssistant.getBoundingClientRect();
+            localStorage.setItem('assistantPosition', JSON.stringify({
+                left: rect.left,
+                top: rect.top
+            }));
+        }
+        
+        function loadSavedPosition() {
+            const saved = localStorage.getItem('assistantPosition');
+            if (saved) {
+                const position = JSON.parse(saved);
+                floatingAssistant.style.left = position.left + 'px';
+                floatingAssistant.style.top = position.top + 'px';
+                floatingAssistant.style.right = 'auto';
+                floatingAssistant.style.bottom = 'auto';
+            }
+        }
+        
+        function loadSavedTheme() {
+            const savedTheme = localStorage.getItem('assistantTheme');
+            if (savedTheme === 'light') {
+                isLightTheme = true;
+                document.body.classList.add('light');
+                document.getElementById('themeToggle').innerHTML = '<span class="text-xs">☀️</span>';
+            }
+        }
+        
+        // ==================== RESIZE FUNCTIONALITY ====================
+        const resizeHandles = [
+            { selector: '.resize-handle-n', dir: 'n' },
+            { selector: '.resize-handle-e', dir: 'e' },
+            { selector: '.resize-handle-s', dir: 's' },
+            { selector: '.resize-handle-w', dir: 'w' },
+            { selector: '.resize-handle-ne', dir: 'ne' },
+            { selector: '.resize-handle-nw', dir: 'nw' },
+            { selector: '.resize-handle-se', dir: 'se' },
+            { selector: '.resize-handle-sw', dir: 'sw' },
+        ];
+        let isResizing = false;
+        let resizeDir = '';
+        let startX, startY, startW, startH, startTop, startLeft;
+        resizeHandles.forEach(h => {
+            const handle = document.querySelector(h.selector);
+            handle.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                isResizing = true;
+                resizeDir = h.dir;
+                startX = e.clientX;
+                startY = e.clientY;
+                const rect = floatingAssistant.getBoundingClientRect();
+                startW = rect.width;
+                startH = rect.height;
+                startTop = rect.top;
+                startLeft = rect.left;
+                document.body.style.userSelect = 'none';
+            });
+        });
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            let dx = e.clientX - startX;
+            let dy = e.clientY - startY;
+            let newW = startW, newH = startH, newTop = startTop, newLeft = startLeft;
+            if (resizeDir.includes('e')) newW = Math.max(320, startW + dx);
+            if (resizeDir.includes('s')) newH = Math.max(320, startH + dy);
+            if (resizeDir.includes('w')) {
+                newW = Math.max(320, startW - dx);
+                newLeft = startLeft + dx;
+            }
+            if (resizeDir.includes('n')) {
+                newH = Math.max(320, startH - dy);
+                newTop = startTop + dy;
+            }
+            floatingAssistant.style.width = newW + 'px';
+            floatingAssistant.style.height = newH + 'px';
+            floatingAssistant.style.left = newLeft + 'px';
+            floatingAssistant.style.top = newTop + 'px';
+            floatingAssistant.style.right = 'auto';
+            floatingAssistant.style.bottom = 'auto';
+        });
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.userSelect = '';
+                savePosition();
+            }
+        });
+    </script>
+</body>
+</html>
